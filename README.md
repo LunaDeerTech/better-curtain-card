@@ -65,6 +65,40 @@ If you want easier installation and updates via HACS:
 
 3. **Restart Home Assistant**
 
+### Method 2 Troubleshooting
+
+If you encounter the error "The version XXXXXX for this plugin can not be used with HACS":
+
+**Common Issues & Solutions:**
+
+1. **Missing hacs.json file**
+   - ✅ **Fixed**: The repository now includes `hacs.json`
+   - Ensure you're using the latest commit
+
+2. **GitHub Release Structure**
+   - Make sure GitHub releases are properly tagged (v1.0.0, v1.0.1, etc.)
+   - Releases should include compiled `dist/better-curtain-card.js`
+
+3. **File Structure Requirements**
+   ```
+   Repository Structure:
+   ├── hacs.json (required)
+   ├── dist/
+   │   └── better-curtain-card.js (required)
+   ├── README.md
+   └── manifest.json (optional, but recommended)
+   ```
+
+4. **HACS Cache Issues**
+   - Clear HACS cache: HACS → Settings → Clear Cache
+   - Restart Home Assistant
+   - Try installation again
+
+5. **Repository URL Verification**
+   - Ensure URL is exactly: `https://github.com/LunaDeerTech/better-curtain-card`
+   - Repository must be public
+   - Check for typos in the URL
+
 ## ⚙️ Configuration
 
 ### Single Curtain Mode
@@ -425,6 +459,70 @@ Clear error messages guide users to fix issues.
 
 ### 5. Developer-Friendly
 Clean, modular, well-documented code.
+
+---
+
+## 🔧 HACS Troubleshooting
+
+### Common Error: "The version XXXXXX for this plugin can not be used with HACS"
+
+This error typically means HACS cannot find the required files or structure. Here's how to fix it:
+
+**Immediate Solutions:**
+
+1. **Wait for HACS to sync**
+   - Sometimes HACS needs 5-10 minutes to sync new repositories
+   - Try again after waiting
+
+2. **Manual installation**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/LunaDeerTech/better-curtain-card
+   cd better-curtain-card
+   
+   # Build the project
+   npm install
+   npm run build
+   
+   # Copy to Home Assistant
+   cp dist/better-curtain-card.js /config/www/community/better-curtain-card/
+   ```
+
+3. **Check GitHub repository**
+   - Visit: https://github.com/LunaDeerTech/better-curtain-card
+   - Verify `hacs.json` exists in the root
+   - Verify `dist/better-curtain-card.js` exists
+
+**For Repository Maintainers:**
+
+If you're the repository owner and users report this error:
+
+1. **Ensure hacs.json exists** ✅ (Already done)
+2. **Create proper GitHub releases** (Use the workflow provided)
+3. **Include dist folder in releases** (Automated via workflow)
+4. **Tag releases properly** (v1.0.0, v1.0.1, etc.)
+
+**Quick Release Process:**
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+# GitHub Actions will automatically create release with hacs.json and dist/
+```
+
+### Verification Checklist
+
+- [x] hacs.json exists in repository root
+- [x] dist/better-curtain-card.js exists
+- [x] Repository is public
+- [x] GitHub releases are tagged properly
+- [x] HACS custom repository URL is correct
+- [x] Category is set to "Lovelace" in HACS
+
+If all checks pass and it still doesn't work, open an issue on GitHub with:
+- Exact error message
+- HACS version
+- Home Assistant version
+- Steps you've tried
 
 ---
 
