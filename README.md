@@ -49,14 +49,21 @@ A Home Assistant Lovelace custom card that enhances curtain control while mainta
    entity: cover.living_room
    ```
 
-### Method 2: HACS (Future)
+### Method 2: HACS Custom Repository
 
-Once published to HACS:
-1. Open HACS in Home Assistant
-2. Search for "Better Curtain Card"
-3. Click Install
-4. Add resource as above
-5. Restart HA
+If you want easier installation and updates via HACS:
+
+1. **Add custom repository:**
+   - Open HACS → Settings (bottom left) → Custom Repositories
+   - Add repository URL: `https://github.com/LunaDeerTech/better-curtain-card`
+   - Category: **Lovelace**
+
+2. **Install via HACS:**
+   - Search for "Better Curtain Card" in HACS
+   - Click Install
+   - HACS will automatically download and install the card
+
+3. **Restart Home Assistant**
 
 ## ⚙️ Configuration
 
