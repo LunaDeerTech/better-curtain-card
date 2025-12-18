@@ -898,4 +898,11 @@ BetterCurtainCard = __decorate([
     customElement('better-curtain-card')
 ], BetterCurtainCard);
 export { BetterCurtainCard };
+customElements.define('better-curtain-card', BetterCurtainCard);
+window.customCards = window.customCards || [];
+window.customCards.push({
+    type: 'better-curtain-card',
+    name: 'Better Curtain Card',
+    description: 'A custom card for better curtain control with single and double modes.',
+});
 //# sourceMappingURL=better-curtain-card.js.map

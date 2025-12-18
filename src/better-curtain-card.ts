@@ -1057,3 +1057,12 @@ declare global {
     'better-curtain-card': BetterCurtainCard;
   }
 }
+
+customElements.define('better-curtain-card', BetterCurtainCard);
+
+(window as any).customCards = (window as any).customCards || [];
+(window as any).customCards.push({
+  type: 'better-curtain-card',
+  name: 'Better Curtain Card',
+  description: 'A custom card for better curtain control with single and double modes.',
+});
