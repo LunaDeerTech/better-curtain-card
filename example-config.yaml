@@ -1,0 +1,49 @@
+# Example configurations for Better Curtain Card
+
+# Example 1: Single curtain with default settings
+cards:
+  - type: custom:better-curtain-card
+    mode: single
+    entity: cover.bedroom_curtain
+
+# Example 2: Single curtain with direction and range mapping
+  - type: custom:better-curtain-card
+    mode: single
+    entity: cover.living_room
+    direction: left
+    range:
+      min: 10
+      max: 90
+
+# Example 3: Dual curtain control
+  - type: custom:better-curtain-card
+    mode: double
+    left_entity: cover.curtain_left
+    right_entity: cover.curtain_right
+    direction: up
+
+# Example 4: Dual curtain with independent ranges
+  - type: custom:better-curtain-card
+    mode: double
+    left_entity: cover.curtain_left
+    right_entity: cover.curtain_right
+    direction: left
+    left_range:
+      min: 15
+      max: 85
+    right_range:
+      min: 20
+      max: 80
+
+# Example 5: Full configuration example
+  - type: custom:better-curtain-card
+    mode: double
+    direction: down
+    left_entity: cover.guest_room_left
+    right_entity: cover.guest_room_right
+    left_range:
+      min: 5
+      max: 95
+    right_range:
+      min: 10
+      max: 90

@@ -1,0 +1,29 @@
+{
+  "name": "better-curtain-card",
+  "version": "1.0.0",
+  "description": "A Home Assistant custom card that enhances curtain control while maintaining native Cover card compatibility",
+  "main": "dist/better-curtain-card.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && echo 'TypeScript compiled successfully'",
+    "dev": "tsc --watch",
+    "test": "echo \"No tests yet\" && exit 0",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "curtain",
+    "cover"
+  ],
+  "author": "LunaDeerTech",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "rimraf": "^5.0.7"
+  },
+  "dependencies": {
+    "lit": "^3.1.3"
+  }
+}
