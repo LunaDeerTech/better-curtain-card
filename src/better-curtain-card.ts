@@ -1,4 +1,4 @@
-import { LitElement, html, css, CSSResultGroup, PropertyValues } from 'lit';
+import { LitElement, html, css, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
 // Home Assistant types (minimal definitions for our needs)
@@ -11,9 +11,9 @@ interface LovelaceCardConfig {
   type: string;
   mode?: 'single' | 'double';
   entity?: string;
-  direction?: 'up' | 'down' | 'left' | 'right';
   left_entity?: string;
   right_entity?: string;
+  direction?: 'up' | 'down' | 'left' | 'right';
   range?: {
     min: number;
     max: number;
@@ -34,13 +34,6 @@ export class BetterCurtainCard extends LitElement {
   @state() private error?: string;
   
   private _hass?: HomeAssistant;
-
-  // Default configuration
-  private defaultConfig: Partial<LovelaceCardConfig> = {
-    mode: 'single',
-    direction: 'up',
-    range: { min: 0, max: 100 }
-  };
 
   static styles: CSSResultGroup = css`
     :host {
@@ -114,8 +107,32 @@ export class BetterCurtainCard extends LitElement {
       margin: 12px 0;
     }
 
-    ha-slider {
+    input[type="range"] {
       width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--slider-track-color, #dcdcdc);
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      cursor: pointer;
+      border: none;
     }
 
     .unavailable {
@@ -125,6 +142,21 @@ export class BetterCurtainCard extends LitElement {
       padding: 8px;
     }
 
+    /* Horizontal slider for left/right directions */
+    .horizontal-slider {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    /* Vertical slider for up/down directions */
+    .vertical-slider {
+      height: 100px;
+      transform: rotate(270deg);
+      transform-origin: center;
+      margin: 20px 0;
+    }
+
+    /* Double mode specific styles */
     .dual-mode-container {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -143,54 +175,259 @@ export class BetterCurtainCard extends LitElement {
       font-weight: 500;
       margin-bottom: 4px;
       color: var(--secondary-text-color);
+      text-align: center;
     }
 
     .status-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 8px;
-      font-size: 0.9em;
+      margin: 8px 0 16px 0;
+      padding: 8px 12px;
+      background: var(--card-background-color, var(--ha-card-background, #fff));
+      border-radius: 4px;
+      border: 1px solid var(--divider-color, #e0e0e0);
+      font-size: 0.95em;
+    }
+
+    .status-row span:first-child {
+      font-weight: 500;
+      color: var(--secondary-text-color);
     }
 
     .status-partial {
       color: var(--state-cover-partial-color, #ff9800);
-      font-weight: 500;
+      font-weight: 700;
     }
 
     .status-closed {
       color: var(--state-cover-closed-color, #4caf50);
+      font-weight: 700;
     }
 
     .status-open {
       color: var(--state-cover-open-color, #2196f3);
+      font-weight: 700;
     }
 
-    /* Horizontal slider orientation */
-    .horizontal-slider {
-      transform: rotate(0deg);
+    .status-mixed {
+      color: #9c27b0;
+      font-weight: 700;
+    }
+
+    /* Control sections for Task 6 */
+    .control-section {
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--card-background-color, var(--ha-card-background, #fff));
+      border-radius: 6px;
+      border: 1px solid var(--divider-color, #e0e0e0);
+    }
+
+    .section-title {
+      font-weight: 600;
+      font-size: 1em;
+      margin-bottom: 8px;
+      color: var(--primary-text-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 16px;
+      background: var(--primary-color, #2196f3);
+      border-radius: 2px;
+    }
+
+    .overall-control {
+      border-left: 4px solid var(--primary-color, #2196f3);
+    }
+
+    .independent-controls {
+      border-left: 4px solid #ff9800;
+    }
+
+    /* Enhanced dual mode container */
+    .dual-mode-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .single-entity {
+      border: 1px solid var(--divider-color, #e0e0e0);
+      border-radius: 6px;
+      padding: 10px;
+      background: var(--card-background-color, var(--ha-card-background, #fff));
+      text-align: center;
+    }
+
+    .entity-label {
+      font-size: 0.95em;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--secondary-text-color);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Enhanced error display (Task 7) */
+    .error-container {
+      background: var(--card-background-color, var(--ha-card-background, #fff));
+      border-radius: 6px;
+      padding: 16px;
+      margin: 8px 0;
+      box-shadow: var(--ha-card-box-shadow, 0 2px 4px rgba(0, 0, 0, 0.1));
+    }
+
+    .error-header {
+      font-size: 1.1em;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--error-color, #db4437);
+    }
+
+    .error-body {
+      font-family: monospace;
+      font-size: 0.9em;
+      line-height: 1.6;
+      color: var(--primary-text-color);
+      background: var(--secondary-background-color, #f5f5f5);
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .error-footer {
+      font-size: 0.85em;
+      color: var(--secondary-text-color);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* Loading states (Task 7) */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      gap: 16px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--divider-color, #e0e0e0);
+      border-top: 4px solid var(--primary-color, #2196f3);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      color: var(--secondary-text-color);
+      font-size: 0.95em;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .dual-mode-container {
+        grid-template-columns: 1fr;
+      }
     }
   `;
 
-  // Main render method
+  // Main render method with enhanced error handling (Task 7)
   render() {
+    // Configuration errors
     if (this.error) {
-      return html`
-        <div class="error-message">
-          <strong>Configuration Error:</strong><br>
-          ${this.error}
-        </div>
-      `;
+      return this.renderError(this.error, 'configuration');
     }
 
     if (!this.config) {
-      return html`<div class="loading">Loading...</div>`;
+      return this.renderLoading('Loading configuration...');
     }
 
+    // Runtime validation: Home Assistant connection
     if (!this.hass) {
-      return html`<div class="loading">Connecting to Home Assistant...</div>`;
+      return this.renderLoading('Connecting to Home Assistant...');
     }
 
+    // Runtime validation: Entity existence (single mode)
+    if (this.config.mode === 'single' && this.config.entity) {
+      const stateObj = this.hass.states[this.config.entity];
+      if (!stateObj) {
+        return this.renderError(
+          this.formatError('Entity Not Found', 
+            `Entity "${this.config.entity}" does not exist.`,
+            'Check your entity_id in the configuration.'),
+          'runtime'
+        );
+      }
+      
+      if (stateObj.state === 'unavailable') {
+        return this.renderError(
+          this.formatError('Entity Unavailable', 
+            `Entity "${this.config.entity}" is currently unavailable.`,
+            'The device may be offline or experiencing issues.'),
+          'warning'
+        );
+      }
+    }
+
+    // Runtime validation: Entity existence (double mode)
+    if (this.config.mode === 'double') {
+      const leftState = this.hass.states[this.config.left_entity!];
+      const rightState = this.hass.states[this.config.right_entity!];
+      
+      if (!leftState || !rightState) {
+        const missing = [];
+        if (!leftState) missing.push(`left_entity: ${this.config.left_entity}`);
+        if (!rightState) missing.push(`right_entity: ${this.config.right_entity}`);
+        
+        return this.renderError(
+          this.formatError('Entities Not Found', 
+            'One or both entities do not exist.',
+            `Missing: ${missing.join(', ')}`),
+          'runtime'
+        );
+      }
+
+      // Entity type validation
+      const validateCover = (entity: string, state: any, side: string) => {
+        if (!state.attributes || state.attributes.device_class !== 'cover' && 
+            !state.entity_id.startsWith('cover.')) {
+          return `Entity "${entity}" is not a cover device.`;
+        }
+        return null;
+      };
+
+      const leftError = validateCover(this.config.left_entity!, leftState, 'left');
+      const rightError = validateCover(this.config.right_entity!, rightState, 'right');
+      
+      if (leftError || rightError) {
+        return this.renderError(
+          this.formatError('Invalid Entity Type', 
+            'Entities must be cover devices.',
+            [leftError, rightError].filter(Boolean).join('\n')),
+          'runtime'
+        );
+      }
+    }
+
+    // Render mode-specific UI
     const mode = this.config.mode || 'single';
 
     if (mode === 'single') {
@@ -199,7 +436,60 @@ export class BetterCurtainCard extends LitElement {
       return this.renderDoubleMode();
     }
 
-    return html`<div class="error-message">Invalid mode: ${mode}</div>`;
+    // Should never reach here due to config validation
+    return this.renderError(
+      this.formatError('Unknown Mode', 
+        `Mode "${mode}" could not be processed.`,
+        'This should not happen. Please report this issue.'),
+      'critical'
+    );
+  }
+
+  // Enhanced error display
+  private renderError(errorMessage: string, type: 'configuration' | 'runtime' | 'warning' | 'critical') {
+    const typeColors = {
+      configuration: '#db4437',  // Red
+      runtime: '#ff9800',        // Orange
+      warning: '#ff9800',        // Orange
+      critical: '#9c27b0'        // Purple
+    };
+
+    const typeLabels = {
+      configuration: 'Configuration Error',
+      runtime: 'Runtime Error',
+      warning: 'Warning',
+      critical: 'Critical Error'
+    };
+
+    const color = typeColors[type];
+    const label = typeLabels[type];
+
+    return html`
+      <div class="error-container" style="border-left: 4px solid ${color};">
+        <div class="error-header">
+          <strong>${label}</strong>
+        </div>
+        <div class="error-body">
+          ${errorMessage.split('\n').map(line => html`${line}<br>`)}
+        </div>
+        <div class="error-footer">
+          ${type === 'configuration' ? 'Fix the configuration and reload the page.' : ''}
+          ${type === 'runtime' ? 'Check entity configuration and device status.' : ''}
+          ${type === 'warning' ? 'The card will continue to work, but with limitations.' : ''}
+          ${type === 'critical' ? 'This is a bug. Please report it.' : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Loading state display
+  private renderLoading(message: string) {
+    return html`
+      <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">${message}</div>
+      </div>
+    `;
   }
 
   private renderSingleMode() {
@@ -220,12 +510,31 @@ export class BetterCurtainCard extends LitElement {
       `;
     }
 
-    const position = this.getDisplayPosition(stateObj);
+    // Get entity position and map to UI based on direction + range
+    const rawEntityPosition = stateObj.attributes?.current_position ?? 0;
+    
+    // Clamp entity position to valid range before mapping
+    const range = this.config.range || { min: 0, max: 100 };
+    const clampedEntityPosition = Math.max(range.min, Math.min(range.max, rawEntityPosition));
+    
+    const uiPosition = this.mapPositionForUI(clampedEntityPosition);
     const supports = stateObj.attributes?.supported_features || 0;
+    const direction = this.config.direction || 'up';
+
+    // Determine if slider should be horizontal
+    const isHorizontal = direction === 'left' || direction === 'right';
+
+    // Show range info if custom range is configured
+    const rangeInfo = (range.min !== 0 || range.max !== 100) 
+      ? html`<div style="font-size: 0.8em; color: var(--secondary-text-color); margin-top: 4px;">
+                Range: ${range.min}-${range.max}%
+              </div>`
+      : '';
 
     return html`
-      <div class="card-header">Curtain Control</div>
-      <div class="position-display">Position: ${Math.round(position)}%</div>
+      <div class="card-header">Curtain Control (${direction})</div>
+      <div class="position-display">Position: ${Math.round(uiPosition)}%</div>
+      ${rangeInfo}
       <div class="controls">
         ${(supports & 1) ? html`
           <button class="control-button" @click=${() => this.openCover(entity)}>Open</button>
@@ -241,9 +550,9 @@ export class BetterCurtainCard extends LitElement {
             <input type="range" 
                    min="0" 
                    max="100" 
-                   value=${Math.round(position)}
-                   @change=${(e: Event) => this.setCoverPosition(entity, (e.target as HTMLInputElement).value)}
-                   style="width: 100%">
+                   value=${Math.round(uiPosition)}
+                   class=${isHorizontal ? 'horizontal-slider' : 'vertical-slider'}
+                   @change=${(e: Event) => this.setCoverPosition(entity, (e.target as HTMLInputElement).value)}>
           </div>
         ` : ''}
       </div>
@@ -258,6 +567,7 @@ export class BetterCurtainCard extends LitElement {
       return html`<div class="error-message">Both left_entity and right_entity must be specified for double mode</div>`;
     }
 
+    // Get states for both entities
     const leftState = this.hass.states[leftEntity];
     const rightState = this.hass.states[rightEntity];
 
@@ -265,103 +575,308 @@ export class BetterCurtainCard extends LitElement {
       return html`<div class="error-message">One or both entities not found</div>`;
     }
 
-    const leftPos = this.getDisplayPosition(leftState, 'left');
-    const rightPos = this.getDisplayPosition(rightState, 'right');
-    const isPartial = Math.abs(leftPos - rightPos) > 5; // 5% tolerance
+    // Check availability
+    const leftUnavailable = leftState.state === 'unavailable';
+    const rightUnavailable = rightState.state === 'unavailable';
+
+    // Get positions with range mapping
+    const leftRange = this.config.left_range || { min: 0, max: 100 };
+    const rightRange = this.config.right_range || { min: 0, max: 100 };
+
+    const leftRawPos = leftState.attributes?.current_position ?? 0;
+    const rightRawPos = rightState.attributes?.current_position ?? 0;
+
+    const leftClamped = Math.max(leftRange.min, Math.min(leftRange.max, leftRawPos));
+    const rightClamped = Math.max(rightRange.min, Math.min(rightRange.max, rightRawPos));
+
+    const leftUIPos = this.mapPositionForUI(leftClamped, 'left');
+    const rightUIPos = this.mapPositionForUI(rightClamped, 'right');
+
+    // Check if positions are significantly different (partial state)
+    const isPartial = Math.abs(leftUIPos - rightUIPos) > 5; // 5% tolerance
+    const bothClosed = leftUIPos === 0 && rightUIPos === 0;
+    const bothOpen = leftUIPos === 100 && rightUIPos === 100;
+
+    // Status text and class
+    const statusText = isPartial ? 'Partial' : (bothClosed ? 'Closed' : (bothOpen ? 'Open' : 'Mixed'));
+    const statusClass = isPartial ? 'status-partial' : (bothClosed ? 'status-closed' : (bothOpen ? 'status-open' : 'status-mixed'));
 
     return html`
       <div class="card-header">Dual Curtain Control</div>
+      
+      <!-- Status Summary -->
       <div class="status-row">
         <span>Status:</span>
-        <span class=${isPartial ? 'status-partial' : (leftPos === 0 && rightPos === 0 ? 'status-closed' : 'status-open')}>
-          ${isPartial ? 'Partial' : (leftPos === 0 && rightPos === 0 ? 'Closed' : 'Open')}
-        </span>
-      </div>
-      
-      <div class="controls">
-        <button class="control-button" @click=${() => this.openCover(leftEntity)}>Left Open</button>
-        <button class="control-button" @click=${() => this.closeCover(leftEntity)}>Left Close</button>
-        <button class="control-button" @click=${() => this.stopCover(leftEntity)}>Left Stop</button>
-        <button class="control-button" @click=${() => this.openCover(rightEntity)}>Right Open</button>
-        <button class="control-button" @click=${() => this.closeCover(rightEntity)}>Right Close</button>
-        <button class="control-button" @click=${() => this.stopCover(rightEntity)}>Right Stop</button>
-        <button class="control-button" @click=${() => this.openBoth()}>Open Both</button>
-        <button class="control-button" @click=${() => this.closeBoth()}>Close Both</button>
-        <button class="control-button" @click=${() => this.stopBoth()}>Stop Both</button>
+        <span class=${statusClass}>${statusText}</span>
       </div>
 
-      <div class="dual-mode-container">
-        <div class="single-entity">
-          <div class="entity-label">Left Curtain</div>
-          <div class="position-display">${Math.round(leftPos)}%</div>
-          ${(leftState.attributes?.supported_features & 8) ? html`
-            <input type="range" min="0" max="100" value=${Math.round(leftPos)}
-                   @change=${(e: Event) => this.setCoverPosition(leftEntity, (e.target as HTMLInputElement).value)}
-                   style="width: 100%">
+      <!-- Overall Control区 -->
+      <div class="control-section overall-control">
+        <div class="section-title">Overall Control</div>
+        <div class="controls">
+          ${(leftState.attributes?.supported_features & 1 || rightState.attributes?.supported_features & 1) ? html`
+            <button class="control-button" @click=${() => this.openBoth()}>Open Both</button>
+          ` : ''}
+          ${(leftState.attributes?.supported_features & 2 || rightState.attributes?.supported_features & 2) ? html`
+            <button class="control-button" @click=${() => this.closeBoth()}>Close Both</button>
+          ` : ''}
+          ${(leftState.attributes?.supported_features & 4 || rightState.attributes?.supported_features & 4) ? html`
+            <button class="control-button" @click=${() => this.stopBoth()}>Stop Both</button>
           ` : ''}
         </div>
-        <div class="single-entity">
-          <div class="entity-label">Right Curtain</div>
-          <div class="position-display">${Math.round(rightPos)}%</div>
-          ${(rightState.attributes?.supported_features & 8) ? html`
-            <input type="range" min="0" max="100" value=${Math.round(rightPos)}
-                   @change=${(e: Event) => this.setCoverPosition(rightEntity, (e.target as HTMLInputElement).value)}
-                   style="width: 100%">
-          ` : ''}
+      </div>
+
+      <!-- Independent Control区 -->
+      <div class="control-section independent-controls">
+        <div class="section-title">Independent Control</div>
+        <div class="dual-mode-container">
+          <!-- Left Curtain -->
+          <div class="single-entity">
+            <div class="entity-label">Left Curtain</div>
+            ${leftUnavailable ? html`
+              <div class="unavailable">Unavailable</div>
+            ` : html`
+              <div class="position-display">${Math.round(leftUIPos)}%</div>
+              ${this.renderEntityControls(leftEntity, leftState, leftUIPos, 'left')}
+            `}
+          </div>
+
+          <!-- Right Curtain -->
+          <div class="single-entity">
+            <div class="entity-label">Right Curtain</div>
+            ${rightUnavailable ? html`
+              <div class="unavailable">Unavailable</div>
+            ` : html`
+              <div class="position-display">${Math.round(rightUIPos)}%</div>
+              ${this.renderEntityControls(rightEntity, rightState, rightUIPos, 'right')}
+            `}
+          </div>
         </div>
       </div>
     `;
   }
 
-  // Configuration handling
+  private renderEntityControls(entity: string, stateObj: any, uiPosition: number, side: 'left' | 'right') {
+    const supports = stateObj.attributes?.supported_features || 0;
+    const direction = this.config.direction || 'up';
+    const isHorizontal = direction === 'left' || direction === 'right';
+
+    return html`
+      <div class="controls">
+        ${(supports & 1) ? html`
+          <button class="control-button" @click=${() => this.openCover(entity)}>Open</button>
+        ` : ''}
+        ${(supports & 2) ? html`
+          <button class="control-button" @click=${() => this.closeCover(entity)}>Close</button>
+        ` : ''}
+        ${(supports & 4) ? html`
+          <button class="control-button" @click=${() => this.stopCover(entity)}>Stop</button>
+        ` : ''}
+      </div>
+      ${(supports & 8) ? html`
+        <div class="slider-container">
+          <input type="range" 
+                 min="0" 
+                 max="100" 
+                 value=${Math.round(uiPosition)}
+                 class=${isHorizontal ? 'horizontal-slider' : 'vertical-slider'}
+                 @change=${(e: Event) => this.setCoverPosition(entity, (e.target as HTMLInputElement).value)}>
+        </div>
+      ` : ''}
+    `;
+  }
+
+  // Configuration handling with enhanced Task 7 validation
   setConfig(config: LovelaceCardConfig) {
     // Validate basic structure
     if (!config || typeof config !== 'object') {
-      this.error = 'Invalid configuration format';
+      this.error = this.formatError('Configuration Error', 
+        'Invalid configuration format. Expected an object.');
       return;
     }
 
-    // Create merged config with defaults
-    this.config = { ...this.defaultConfig, ...config };
+    // Validate type
+    if (!config.type || typeof config.type !== 'string') {
+      this.error = this.formatError('Configuration Error', 
+        'Missing or invalid "type" property. Expected: "custom:better-curtain-card"');
+      return;
+    }
 
-    // Validate mode
-    if (this.config.mode !== 'single' && this.config.mode !== 'double') {
-      this.error = `Invalid mode: ${this.config.mode}. Must be 'single' or 'double'`;
+    if (config.type !== 'custom:better-curtain-card') {
+      this.error = this.formatError('Configuration Error', 
+        `Invalid type: "${config.type}". Expected: "custom:better-curtain-card"`);
+      return;
+    }
+
+    // Determine and validate mode
+    const mode = config.mode || 'single';
+    const validModes = ['single', 'double'];
+    
+    if (!validModes.includes(mode)) {
+      this.error = this.formatError('Invalid Mode', 
+        `Mode "${mode}" is not supported.`, 
+        `Valid modes: ${validModes.join(', ')}`);
+      return;
+    }
+
+    // Validate direction
+    const validDirections = ['up', 'down', 'left', 'right'];
+    if (config.direction && !validDirections.includes(config.direction)) {
+      this.error = this.formatError('Invalid Direction', 
+        `"${config.direction}" is not a valid direction.`, 
+        `Valid directions: ${validDirections.join(', ')}`);
       return;
     }
 
     // Validate entity requirements based on mode
-    if (this.config.mode === 'single' && !this.config.entity) {
-      this.error = 'Single mode requires an entity';
-      return;
-    }
-
-    if (this.config.mode === 'double') {
-      if (!this.config.left_entity || !this.config.right_entity) {
-        this.error = 'Double mode requires both left_entity and right_entity';
+    if (mode === 'single') {
+      if (!config.entity) {
+        this.error = this.formatError('Missing Entity', 
+          'Single mode requires "entity" property.',
+          'Example: entity: cover.living_room');
+        return;
+      }
+      
+      if (typeof config.entity !== 'string') {
+        this.error = this.formatError('Invalid Entity', 
+          '"entity" must be a string.',
+          `Received: ${typeof config.entity}`);
+        return;
+      }
+    } else if (mode === 'double') {
+      if (!config.left_entity || !config.right_entity) {
+        this.error = this.formatError('Missing Entities', 
+          'Double mode requires both "left_entity" and "right_entity".',
+          'Example: left_entity: cover.left, right_entity: cover.right');
+        return;
+      }
+      
+      if (typeof config.left_entity !== 'string' || typeof config.right_entity !== 'string') {
+        this.error = this.formatError('Invalid Entities', 
+          '"left_entity" and "right_entity" must be strings.',
+          `Received left: ${typeof config.left_entity}, right: ${typeof config.right_entity}`);
+        return;
+      }
+      
+      // Check for duplicate entities
+      if (config.left_entity === config.right_entity) {
+        this.error = this.formatError('Duplicate Entities', 
+          'left_entity and right_entity cannot be the same.',
+          `Both configured as: ${config.left_entity}`);
         return;
       }
     }
 
-    // Validate range configuration if provided
-    if (this.config.range) {
-      if (this.config.range.min >= this.config.range.max) {
-        this.error = `Invalid range: min (${this.config.range.min}) must be less than max (${this.config.range.max})`;
-        return;
-      }
-    }
+    // Validate range configurations
+    const validatedRange = this.validateRange(config.range, 'range');
+    const validatedLeftRange = this.validateRange(config.left_range, 'left_range');
+    const validatedRightRange = this.validateRange(config.right_range, 'right_range');
 
-    if (this.config.left_range && (this.config.left_range.min >= this.config.left_range.max)) {
-      this.error = 'Invalid left_range: min must be less than max';
-      return;
-    }
+    if (this.error) return; // Stop if validation failed
 
-    if (this.config.right_range && (this.config.right_range.min >= this.config.right_range.max)) {
-      this.error = 'Invalid right_range: min must be less than max';
-      return;
+    // Store config with defaults
+    if (mode === 'single') {
+      this.config = {
+        type: config.type,
+        mode: 'single',
+        entity: config.entity,
+        direction: config.direction || 'up',
+        range: validatedRange || { min: 0, max: 100 }
+      };
+    } else {
+      this.config = {
+        type: config.type,
+        mode: 'double',
+        left_entity: config.left_entity!,
+        right_entity: config.right_entity!,
+        direction: config.direction || 'up',
+        left_range: validatedLeftRange || { min: 0, max: 100 },
+        right_range: validatedRightRange || { min: 0, max: 100 }
+      };
     }
 
     this.error = undefined;
+  }
+
+  // Helper to format error messages with clear structure
+  private formatError(title: string, message: string, details?: string): string {
+    let formatted = `❌ ${title}\n${message}`;
+    if (details) {
+      formatted += `\n\nDetails: ${details}`;
+    }
+    return formatted;
+  }
+
+  // Enhanced range validation (Task 7)
+  private validateRange(range: any, name: string): { min: number; max: number } | null {
+    // Null/undefined is valid (uses default 0-100)
+    if (range === null || range === undefined) return null;
+
+    // Type validation
+    if (typeof range !== 'object') {
+      this.error = this.formatError('Invalid Range', 
+        `${name} must be an object with min and max properties.`,
+        `Received: ${typeof range}`);
+      return null;
+    }
+
+    // Property existence
+    if (!('min' in range) || !('max' in range)) {
+      this.error = this.formatError('Invalid Range', 
+        `${name} is missing required properties.`,
+        `Required: { min: number, max: number }`);
+      return null;
+    }
+
+    // Value type validation
+    if (typeof range.min !== 'number' || typeof range.max !== 'number') {
+      this.error = this.formatError('Invalid Range', 
+        `${name} properties must be numbers.`,
+        `Received: min=${typeof range.min}, max=${typeof range.max}`);
+      return null;
+    }
+
+    // NaN check
+    if (isNaN(range.min) || isNaN(range.max)) {
+      this.error = this.formatError('Invalid Range', 
+        `${name} values cannot be NaN.`);
+      return null;
+    }
+
+    // Infinity check
+    if (!isFinite(range.min) || !isFinite(range.max)) {
+      this.error = this.formatError('Invalid Range', 
+        `${name} values must be finite numbers.`,
+        `Received: min=${range.min}, max=${range.max}`);
+      return null;
+    }
+
+    // Min < Max validation
+    if (range.min >= range.max) {
+      this.error = this.formatError('Invalid Range', 
+        `min (${range.min}) must be less than max (${range.max}).`,
+        `Range: ${range.min}-${range.max}`);
+      return null;
+    }
+
+    // Clamp to valid 0-100 range
+    const min = Math.max(0, Math.min(100, range.min));
+    const max = Math.max(0, Math.min(100, range.max));
+    
+    // Final validation after clamping
+    if (min >= max) {
+      this.error = this.formatError('Invalid Range', 
+        `${name} values result in invalid range after clamping.`,
+        `Original: ${range.min}-${range.max}, Clamped: ${min}-${max}`);
+      return null;
+    }
+
+    // Warn about clamping if values were modified
+    if (min !== range.min || max !== range.max) {
+      console.warn(`BetterCurtainCard: ${name} values clamped to valid range: ${min}-${max}`);
+    }
+
+    return { min, max };
   }
 
   // Hass property
@@ -375,7 +890,85 @@ export class BetterCurtainCard extends LitElement {
     this.requestUpdate();
   }
 
-  // Service calls
+  // Combined direction and range mapping (Task 2 + Task 3)
+  private mapPositionForUI(entityPosition: number, side?: 'left' | 'right'): number {
+    // Step 1: Map entity position to UI position (0-100) using range
+    const range = this.getRangeForSide(side);
+    
+    // Clamp entity position to range first
+    const clamped = Math.max(range.min, Math.min(range.max, entityPosition));
+    
+    // Map to UI: ui = (entity - min) * 100 / (max - min)
+    let uiPosition = ((clamped - range.min) * 100) / (range.max - range.min);
+    
+    // Ensure 0-100
+    uiPosition = Math.max(0, Math.min(100, uiPosition));
+    
+    // Step 2: Apply direction transformation
+    const direction = this.config.direction || 'up';
+    switch (direction) {
+      case 'up':    // 0=bottom, 100=top (natural vertical)
+        return uiPosition;
+      case 'down':  // 0=top, 100=bottom (inverted vertical)
+        return 100 - uiPosition;
+      case 'left':  // 0=right, 100=left (inverted horizontal)
+        return 100 - uiPosition;
+      case 'right': // 0=left, 100=right (natural horizontal)
+        return uiPosition;
+      default:
+        return uiPosition;
+    }
+  }
+
+  private mapPositionForEntity(uiPosition: number, side?: 'left' | 'right'): number {
+    // Step 1: Apply inverse direction transformation
+    const direction = this.config.direction || 'up';
+    let transformedUI: number;
+    
+    switch (direction) {
+      case 'up':    // UI 0=bottom, 100=top → Entity 0=bottom, 100=top
+        transformedUI = uiPosition;
+        break;
+      case 'down':  // UI 0=top, 100=bottom → Entity 0=bottom, 100=top
+        transformedUI = 100 - uiPosition;
+        break;
+      case 'left':  // UI 0=right, 100=left → Entity 0=bottom, 100=top
+        transformedUI = 100 - uiPosition;
+        break;
+      case 'right': // UI 0=left, 100=right → Entity 0=bottom, 100=top
+        transformedUI = uiPosition;
+        break;
+      default:
+        transformedUI = uiPosition;
+    }
+    
+    // Step 2: Map transformed UI position to entity position using range
+    const range = this.getRangeForSide(side);
+    
+    // Clamp transformed UI to 0-100 first
+    const clamped = Math.max(0, Math.min(100, transformedUI));
+    
+    // Map to entity: entity = min + ui * (max - min) / 100
+    const entity = range.min + (clamped * (range.max - range.min) / 100);
+    
+    return Math.max(range.min, Math.min(range.max, entity)); // Final clamp to range
+  }
+
+  // Helper to get range for specific side
+  private getRangeForSide(side?: 'left' | 'right'): { min: number; max: number } {
+    if (this.config.mode === 'double') {
+      if (side === 'left') {
+        return this.config.left_range || { min: 0, max: 100 };
+      } else if (side === 'right') {
+        return this.config.right_range || { min: 0, max: 100 };
+      }
+    }
+    
+    // Single mode or default
+    return this.config.range || { min: 0, max: 100 };
+  }
+
+  // Service calls (Task 2 + Task 4)
   private async openCover(entity: string) {
     if (!this.hass) return;
     await this.hass.callService('cover', 'open_cover', { entity_id: entity });
@@ -391,87 +984,65 @@ export class BetterCurtainCard extends LitElement {
     await this.hass.callService('cover', 'stop_cover', { entity_id: entity });
   }
 
-  private async setCoverPosition(entity: string, uiPosition: string) {
+  private async setCoverPosition(entity: string, uiPositionString: string) {
     if (!this.hass) return;
     
-    let position = parseInt(uiPosition, 10);
+    // Map UI position back to entity position (with range + direction)
+    const uiPosition = parseInt(uiPositionString, 10);
     
-    // Apply range mapping if configured
-    const range = this.getRangeForEntity(entity);
-    if (range) {
-      // Map UI position (0-100) to real position (min-max)
-      position = Math.round(range.min + (position * (range.max - range.min) / 100));
+    // Determine side for double mode
+    let side: 'left' | 'right' | undefined;
+    if (this.config.mode === 'double') {
+      if (entity === this.config.left_entity) side = 'left';
+      else if (entity === this.config.right_entity) side = 'right';
     }
-
+    
+    const entityPosition = this.mapPositionForEntity(uiPosition, side);
+    
     await this.hass.callService('cover', 'set_cover_position', {
       entity_id: entity,
-      position: position
+      position: entityPosition
     });
   }
 
+  // Double mode service helpers
   private async openBoth() {
     if (!this.config.left_entity || !this.config.right_entity) return;
-    await Promise.all([
-      this.openCover(this.config.left_entity),
-      this.openCover(this.config.right_entity)
-    ]);
+    
+    const leftAvailable = this.hass.states[this.config.left_entity]?.state !== 'unavailable';
+    const rightAvailable = this.hass.states[this.config.right_entity]?.state !== 'unavailable';
+
+    const promises = [];
+    if (leftAvailable) promises.push(this.openCover(this.config.left_entity));
+    if (rightAvailable) promises.push(this.openCover(this.config.right_entity));
+    
+    await Promise.all(promises);
   }
 
   private async closeBoth() {
     if (!this.config.left_entity || !this.config.right_entity) return;
-    await Promise.all([
-      this.closeCover(this.config.left_entity),
-      this.closeCover(this.config.right_entity)
-    ]);
+    
+    const leftAvailable = this.hass.states[this.config.left_entity]?.state !== 'unavailable';
+    const rightAvailable = this.hass.states[this.config.right_entity]?.state !== 'unavailable';
+
+    const promises = [];
+    if (leftAvailable) promises.push(this.closeCover(this.config.left_entity));
+    if (rightAvailable) promises.push(this.closeCover(this.config.right_entity));
+    
+    await Promise.all(promises);
   }
 
   private async stopBoth() {
     if (!this.config.left_entity || !this.config.right_entity) return;
-    await Promise.all([
-      this.stopCover(this.config.left_entity),
-      this.stopCover(this.config.right_entity)
-    ]);
-  }
-
-  // Position calculation helpers
-  private getDisplayPosition(stateObj: any, side?: 'left' | 'right'): number {
-    if (!stateObj || stateObj.state === 'unavailable') return 0;
-
-    let position = stateObj.attributes?.current_position ?? 0;
     
-    // Apply range mapping (real position → UI position)
-    const range = this.getRangeForEntity(stateObj.entity_id, side);
-    if (range && range.min !== 0 && range.max !== 100) {
-      position = ((position - range.min) * 100) / (range.max - range.min);
-    }
+    const leftAvailable = this.hass.states[this.config.left_entity]?.state !== 'unavailable';
+    const rightAvailable = this.hass.states[this.config.right_entity]?.state !== 'unavailable';
 
-    // Clamp to 0-100
-    position = Math.max(0, Math.min(100, position));
-
-    return position;
-  }
-
-  private getRangeForEntity(entityId: string, side?: 'left' | 'right'): { min: number; max: number } | null {
-    if (this.config.mode === 'single') {
-      return this.config.range || null;
-    }
+    const promises = [];
+    if (leftAvailable) promises.push(this.stopCover(this.config.left_entity));
+    if (rightAvailable) promises.push(this.stopCover(this.config.right_entity));
     
-    if (this.config.mode === 'double') {
-      if (side === 'left') {
-        return this.config.left_range || null;
-      } else if (side === 'right') {
-        return this.config.right_range || null;
-      }
-      
-      // Auto-detect side for double mode
-      if (this.config.left_entity === entityId) {
-        return this.config.left_range || null;
-      } else if (this.config.right_entity === entityId) {
-        return this.config.right_range || null;
-      }
-    }
-    
-    return null;
+    await Promise.all(promises);
   }
 
   // Card size hint for Home Assistant

@@ -1,0 +1,97 @@
+# Task 5 Test Configuration - Independent Range Mapping
+# Demonstrates left_range and right_range working independently
+
+# Scenario 1: Different ranges for asymmetric installation
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.window_left
+  right_entity: cover.window_right
+  left_range:
+    min: 10    # Left curtain only moves 10-90%
+    max: 90
+  right_range:
+    min: 20    # Right curtain only moves 20-80%
+    max: 80
+
+# Scenario 2: One curtain with limited range, other full range
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.door_left
+  right_entity: cover.door_right
+  left_range:
+    min: 30    # Left: limited 30-70%
+    max: 70
+  # right_range not specified → defaults to 0-100%
+
+# Scenario 3: Both with small ranges (fine control)
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.narrow_left
+  right_entity: cover.narrow_right
+  left_range:
+    min: 45    # Very small range for precise positioning
+    max: 55
+  right_range:
+    min: 40
+    max: 60
+
+# Scenario 4: Independent ranges + direction + shared range fallback
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.complex_left
+  right_entity: cover.complex_right
+  direction: left
+  range:      # This gets ignored in double mode when left_range/right_range specified
+    min: 10
+    max: 90
+  left_range:
+    min: 15
+    max: 85
+  right_range:
+    min: 25
+    max: 75
+
+# Scenario 5: One side with range, other without (mixed configuration)
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.mixed_left
+  right_entity: cover.mixed_right
+  left_range:
+    min: 20
+    max: 80
+  # right_range omitted → defaults to 0-100%
+
+# Example mapping behavior for Scenario 1:
+# Left curtain (10-90% range):
+#   - UI 0% → Entity 10%
+#   - UI 50% → Entity 50%
+#   - UI 100% → Entity 90%
+#   - Entity at 30% → UI shows 25%
+#
+# Right curtain (20-80% range):
+#   - UI 0% → Entity 20%
+#   - UI 50% → Entity 50%
+#   - UI 100% → Entity 80%
+#   - Entity at 40% → UI shows 33.3%
+
+# Invalid examples (should show errors):
+# 1. min >= max
+# - type: custom:better-curtain-card
+#   mode: double
+#   left_entity: cover.error
+#   right_entity: cover.error2
+#   left_range:
+#     min: 80
+#     max: 20  # ERROR: min >= max
+
+# 2. Values outside 0-100 (will be clamped)
+# - type: custom:better-curtain-card
+#   mode: double
+#   left_entity: cover.error
+#   right_entity: cover.error2
+#   left_range:
+#     min: -10   # Clamped to 0
+#     max: 110   # Clamped to 100
+#   right_range:
+#     min: 45
+#     max: 150   # Clamped to 100, but 45 >= 100 → error

@@ -1,0 +1,260 @@
+# Task 7 Test: Configuration Validation & Error Handling
+# Tests all validation scenarios to ensure proper error detection and reporting
+
+# ❌ ERROR SCENARIOS - Should show clear error messages
+
+# Test 1: Invalid mode
+# Expected: "Invalid Mode" error with suggestions
+- type: custom:better-curtain-card
+  mode: triple
+  entity: cover.living_room
+
+# Test 2: Missing entity in single mode
+# Expected: "Missing Entity" error with example
+- type: custom:better-curtain-card
+  mode: single
+
+# Test 3: Invalid entity type
+# Expected: "Invalid Entity" error with type info
+- type: custom:better-curtain-card
+  mode: single
+  entity: 12345
+
+# Test 4: Missing entities in double mode
+# Expected: "Missing Entities" error
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+
+# Test 5: Duplicate entities
+# Expected: "Duplicate Entities" error
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.both
+  right_entity: cover.both
+
+# Test 6: Invalid direction
+# Expected: "Invalid Direction" error with valid options
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  direction: diagonal
+
+# Test 7: Invalid range (object structure)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range: "invalid"
+
+# Test 8: Invalid range (missing properties)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: 10
+
+# Test 9: Invalid range (wrong types)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: "10"
+    max: "90"
+
+# Test 10: Invalid range (NaN)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: NaN
+    max: 90
+
+# Test 11: Invalid range (Infinity)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: 0
+    max: Infinity
+
+# Test 12: Invalid range (min >= max)
+# Expected: "Invalid Range" error
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: 80
+    max: 20
+
+# Test 13: Invalid range in double mode (left)
+# Expected: "Invalid Range" error for left_range
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+  left_range:
+    min: 100
+    max: 0
+
+# Test 14: Invalid range in double mode (right)
+# Expected: "Invalid Range" error for right_range
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+  right_range:
+    min: 50
+    max: 50
+
+# Test 15: Missing type property
+# Expected: "Invalid Entity Type" error
+- mode: single
+  entity: cover.living_room
+
+# Test 16: Wrong type property
+# Expected: "Configuration Error" error
+- type: custom:wrong-card
+  mode: single
+  entity: cover.living_room
+
+# Test 17: Empty configuration
+# Expected: "Configuration Error" error
+- type: custom:better-curtain-card
+
+# Test 18: Non-object configuration
+# Expected: "Configuration Error" error
+- "not an object"
+
+---
+# ✅ VALID SCENARIOS - Should work without errors
+
+# Test 19: Basic single mode
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+
+# Test 20: Single mode with direction
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.bedroom
+  direction: down
+
+# Test 21: Single mode with range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.kitchen
+  range:
+    min: 10
+    max: 90
+
+# Test 22: Single mode with all options
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.office
+  direction: left
+  range:
+    min: 20
+    max: 80
+
+# Test 23: Basic double mode
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+
+# Test 24: Double mode with direction
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+  direction: right
+
+# Test 25: Double mode with independent ranges
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+  left_range:
+    min: 10
+    max: 90
+  right_range:
+    min: 20
+    max: 80
+
+# Test 26: Double mode with all options
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.left
+  right_entity: cover.right
+  direction: up
+  left_range:
+    min: 15
+    max: 85
+  right_range:
+    min: 5
+    max: 95
+
+# Test 27: Default mode (single)
+- type: custom:better-curtain-card
+  entity: cover.living_room
+
+# Test 28: Default direction (up)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+
+# Test 29: Zero-range (edge case - should clamp to 0-100)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: 0
+    max: 100
+
+# Test 30: Out-of-bounds range (should clamp)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: -10
+    max: 150
+
+---
+# 📋 EXPECTED BEHAVIORS
+
+## Error Messages Should Include:
+1. **Clear title** (e.g., "Invalid Mode")
+2. **Problem description** (what went wrong)
+3. **Helpful details** (what was expected, what was received)
+4. **Actionable guidance** (how to fix)
+
+## Error Types:
+- **Configuration Error**: Basic structure/type issues
+- **Invalid Mode**: Mode not single/double
+- **Missing Entity**: Required entity not provided
+- **Invalid Entity**: Wrong type or format
+- **Duplicate Entities**: Same entity used twice
+- **Invalid Direction**: Direction not in [up, down, left, right]
+- **Invalid Range**: Range properties invalid
+
+## Runtime Checks:
+- Entity existence in Home Assistant
+- Entity type validation (must be cover)
+- Unavailable entity warnings
+
+## Error Display:
+- Red/orange/purple color coding
+- Monospace font for technical details
+- Context-specific guidance
+- Visual separation from card content
+
+## Graceful Behavior:
+- Configuration errors prevent card rendering
+- Runtime errors show warnings but allow partial function
+- Clamped ranges warn in console
+- Unavailable entities show in UI but don't crash

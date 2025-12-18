@@ -1,0 +1,68 @@
+# Task 4 Test Configuration - Double Curtain Entity Modeling
+# Examples showing different double curtain configurations
+
+# Basic double curtain mode
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.living_room_left
+  right_entity: cover.living_room_right
+
+# Double curtain with direction
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.bedroom_left
+  right_entity: cover.bedroom_right
+  direction: left
+
+# Double curtain with independent ranges
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.kitchen_left
+  right_entity: cover.kitchen_right
+  left_range:
+    min: 10
+    max: 90
+  right_range:
+    min: 20
+    max: 80
+
+# Double curtain with direction + independent ranges
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.office_left
+  right_entity: cover.office_right
+  direction: down
+  left_range:
+    min: 15
+    max: 85
+  right_range:
+    min: 25
+    max: 75
+
+# Double curtain with shared range
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.garage_left
+  right_entity: cover.garage_right
+  direction: up
+  range:
+    min: 30
+    max: 70
+
+# Edge case: One entity unavailable (should handle gracefully)
+# When cover.garage_left becomes unavailable, right side should still work
+
+# Error examples (commented out):
+# Missing entity:
+# - type: custom:better-curtain-card
+#   mode: double
+#   left_entity: cover.test
+
+# Invalid range:
+# - type: custom:better-curtain-card
+#   mode: double
+#   left_entity: cover.test_left
+#   right_entity: cover.test_right
+#   left_range:
+#     min: 80
+#     max: 20

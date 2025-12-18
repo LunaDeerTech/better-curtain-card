@@ -1,0 +1,159 @@
+# Task 6 Test: Double Curtain UI & Control Modes
+# Tests "Overall Control + Independent Control" dual-layer interaction
+
+# Test 1: Basic Double Mode with Standard Ranges
+# Expected: Overall controls (Open Both, Close Both, Stop Both) + Independent Left/Right controls
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.living_room_left
+  right_entity: cover.living_room_right
+  direction: up
+
+# Test 2: Horizontal Direction (Left/Right)
+# Expected: Horizontal sliders, clear overall + independent sections
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.bedroom_left
+  right_entity: cover.bedroom_right
+  direction: left
+
+# Test 3: With Independent Ranges (Task 5)
+# Expected: Overall controls still work, independent sections show custom ranges
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.kitchen_left
+  right_entity: cover.kitchen_right
+  direction: up
+  left_range:
+    min: 10
+    max: 90
+  right_range:
+    min: 20
+    max: 80
+
+# Test 4: Mixed Availability
+# Expected: Overall controls work with available entities, independent shows unavailable status
+# (Simulate: left_entity unavailable, right_entity available)
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.office_left
+  right_entity: cover.office_right
+  direction: right
+  left_range:
+    min: 0
+    max: 70
+  right_range:
+    min: 30
+    max: 100
+
+# Test 5: All Status Scenarios
+# Expected status displays:
+# - 0%/0% = Closed
+# - 100%/100% = Open  
+# - 0%/50% = Partial
+# - 30%/80% = Mixed (not closed, not open, not partial)
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.dining_left
+  right_entity: cover.dining_right
+  direction: down
+  left_range:
+    min: 5
+    max: 95
+  right_range:
+    min: 15
+    max: 85
+
+# Test 6: Vertical Direction with Custom Ranges
+# Expected: Vertical sliders, overall + independent controls with range info
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.patio_left
+  right_entity: cover.patio_right
+  direction: up
+  left_range:
+    min: 25
+    max: 75
+  right_range:
+    min: 10
+    max: 90
+
+# Test 7: Right Direction with Ranges
+# Expected: Horizontal rightward sliders, clear control separation
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.garage_left
+  right_entity: cover.garage_right
+  direction: right
+  left_range:
+    min: 0
+    max: 100
+  right_range:
+    min: 20
+    max: 100
+
+# Test 8: Complex Configuration
+# Expected: All features working together
+- type: custom:better-curtain-card
+  mode: double
+  left_entity: cover.master_left
+  right_entity: cover.master_right
+  direction: down
+  left_range:
+    min: 15
+    max: 85
+  right_range:
+    min: 5
+    max: 95
+
+---
+# Expected Behavior Summary for Task 6:
+
+## Overall Control区:
+- Buttons: Open Both, Close Both, Stop Both
+- Calls service on BOTH entities independently
+- Works even if one entity is unavailable
+- Skips buttons for unsupported features
+
+## Independent Control区:
+- Left Curtain section with position display
+- Right Curtain section with position display
+- Per-entity controls (Open/Close/Stop)
+- Per-entity position sliders
+- Clear "Left Curtain" / "Right Curtain" labels
+
+## Status Display:
+- **Closed**: Both at 0%
+- **Open**: Both at 100%
+- **Partial**: Difference > 5%
+- **Mixed**: Any other state
+
+## Visual Structure:
+```
+[Card Header]
+[Status: Open/Closed/Partial/Mixed]
+
+┌─────────────────────────────┐
+│ Overall Control             │
+│ [Open Both] [Close Both]    │
+│ [Stop Both]                 │
+└─────────────────────────────┘
+
+┌─────────────────────────────┐
+│ Independent Control         │
+│ ┌─────────┐ ┌─────────┐    │
+│ │ Left    │ │ Right   │    │
+│ │ 50%     │ │ 75%     │    │
+│ │ [O C S] │ │ [O C S] │    │
+│ └─────────┘ └─────────┘    │
+└─────────────────────────────┘
+```
+
+## Key Features Implemented:
+✅ Overall control区 (Open/Close/Stop both)
+✅ Independent control区 (Left + Right)
+✅ Status detection (Closed/Open/Partial/Mixed)
+✅ Entity availability handling
+✅ Range-aware independent controls
+✅ Direction-aware sliders
+✅ Clear visual separation

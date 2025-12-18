@@ -1,0 +1,79 @@
+# Task 3 Test Configuration - Active Range Mapping
+# Examples showing different range configurations
+
+# Basic range mapping (0-100% maps to 10-90% on entity)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  range:
+    min: 10
+    max: 90
+
+# Small range (useful for limited travel curtains)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.bedroom
+  range:
+    min: 20
+    max: 80
+
+# Combined with direction (up) + range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.kitchen
+  direction: up
+  range:
+    min: 5
+    max: 95
+
+# Combined with direction (down) + range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.bathroom
+  direction: down
+  range:
+    min: 15
+    max: 85
+
+# Combined with direction (left) + range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.office
+  direction: left
+  range:
+    min: 25
+    max: 75
+
+# Combined with direction (right) + range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.garage
+  direction: right
+  range:
+    min: 30
+    max: 70
+
+# Edge case: very small range
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.hallway
+  range:
+    min: 45
+    max: 55
+
+# Invalid range examples (should show errors):
+# 1. min >= max
+# - type: custom:better-curtain-card
+#   mode: single
+#   entity: cover.error1
+#   range:
+#     min: 80
+#     max: 20
+
+# 2. Values outside 0-100 (should be clamped)
+# - type: custom:better-curtain-card
+#   mode: single
+#   entity: cover.error2
+#   range:
+#     min: -10
+#     max: 110

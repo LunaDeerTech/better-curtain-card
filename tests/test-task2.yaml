@@ -1,0 +1,31 @@
+# Task 2 Test Configuration
+# Examples showing different direction configurations
+
+# Default direction (up)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+
+# Explicit up direction
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  direction: up
+
+# Down direction (inverted vertical)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  direction: down
+
+# Left direction (inverted horizontal)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  direction: left
+
+# Right direction (natural horizontal)
+- type: custom:better-curtain-card
+  mode: single
+  entity: cover.living_room
+  direction: right
