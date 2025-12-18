@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/better-curtain-card.js
+          name: Release ${{ github.ref_name }}
+          body: |
+            New release ${{ github.ref_name }}
+            
+            ## Changes
+            - Auto-generated release
+          draft: false
+          prerelease: false

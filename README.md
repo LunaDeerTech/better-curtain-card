@@ -25,7 +25,18 @@ A Home Assistant Lovelace custom card that enhances curtain control while mainta
 
 ## 📦 Installation
 
-### Method 1: Manual Installation
+### Method 1: HACS Installation (Recommended)
+
+1. Open HACS in Home Assistant.
+2. Go to "Frontend" section.
+3. Click the 3 dots in the top right corner and select "Custom repositories".
+4. Paste the URL of this repository.
+5. Select "Dashboard" as the category.
+6. Click "Add".
+7. Find "Better Curtain Card" in the list and click "Download".
+8. Refresh your browser.
+
+### Method 2: Manual Installation
 
 1. **Copy the compiled JavaScript file:**
    ```bash
