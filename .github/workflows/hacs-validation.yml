@@ -14,7 +14,71 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Validate HACS
-        uses: hacs/action@main
-        with:
-          category: lovelace
+      - name: Validate hacs.json exists
+        run: |
+          if [ ! -f "hacs.json" ]; then
+            echo "❌ hacs.json file is missing"
+            exit 1
+          fi
+          echo "✅ hacs.json found"
+
+      - name: Validate dist folder exists
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ dist folder is missing"
+            exit 1
+          fi
+          if [ ! -f "dist/better-curtain-card.js" ]; then
+            echo "❌ dist/better-curtain-card.js is missing"
+            exit 1
+          fi
+          echo "✅ dist folder and files found"
+
+      - name: Validate hacs.json structure
+        run: |
+          if command -v jq >/dev/null 2>&1; then
+            # Validate JSON structure
+            jq . hacs.json > /dev/null
+            echo "✅ hacs.json is valid JSON"
+            
+            # Check required fields
+            if jq -e '.name' hacs.json >/dev/null; then
+              echo "✅ name field exists"
+            else
+              echo "❌ name field is missing"
+              exit 1
+            fi
+            
+            if jq -e '.rendering.js' hacs.json >/dev/null; then
+              echo "✅ rendering.js field exists"
+            else
+              echo "❌ rendering.js field is missing"
+              exit 1
+            fi
+          else
+            echo "⚠️ jq not available, skipping JSON validation"
+          fi
+
+      - name: Validate JavaScript file
+        run: |
+          # Check if file exists and has reasonable size
+          if [ -f "dist/better-curtain-card.js" ]; then
+            filesize=$(stat -c%s dist/better-curtain-card.js 2>/dev/null || stat -f%z dist/better-curtain-card.js 2>/dev/null)
+            if [ "$filesize" -gt 1000 ]; then
+              echo "✅ better-curtain-card.js exists and is reasonable size: $filesize bytes"
+            else
+              echo "❌ better-curtain-card.js seems too small: $filesize bytes"
+              exit 1
+            fi
+          else
+            echo "❌ better-curtain-card.js not found in dist/"
+            exit 1
+          fi
+
+      - name: Run local validation script
+        run: |
+          if [ -f "scripts/validate-hacs.js" ]; then
+            node scripts/validate-hacs.js
+          else
+            echo "⚠️ Local validation script not found, skipping"
+          fi

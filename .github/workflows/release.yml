@@ -31,6 +31,8 @@ jobs:
           files: |
             dist/better-curtain-card.js
             hacs.json
+            manifest.json
+            README.md
           draft: false
           prerelease: false
           generate_release_notes: true

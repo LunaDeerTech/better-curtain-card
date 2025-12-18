@@ -1,11 +1,11 @@
 {
   "name": "Better Curtain Card",
   "description": "Enhanced curtain control card with direction mapping, range mapping, and dual curtain support",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homeassistant": "2023.1.0",
   "manifest": {
     "name": "Better Curtain Card",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A Home Assistant custom card that enhances curtain control while maintaining native Cover card compatibility",
     "author": "LunaDeerTech",
     "documentation": "https://github.com/LunaDeerTech/better-curtain-card",
@@ -19,6 +19,6 @@
   "domains": [],
   "issue_tracker": "https://github.com/LunaDeerTech/better-curtain-card/issues",
   "rendering": {
-    "js": "/dist/better-curtain-card.js"
+    "js": "dist/better-curtain-card.js"
   }
 }
